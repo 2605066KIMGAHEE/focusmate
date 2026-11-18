@@ -367,3 +367,20 @@ html[data-theme="dark"] .weekly-stats b {
 html[data-theme="dark"] .weekly-stats {
   color: #b9c3e3;
 }
+/* 계정 동기화 상태 알림: 상단 중앙 */
+.cloud-status {
+  top: 20px;
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  transform: translate(-50%, -12px);
+  opacity: 0;
+  transition: opacity .3s ease, transform .3s ease;
+  text-align: center;
+  z-index: 1100;
+}
+
+.cloud-status.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
