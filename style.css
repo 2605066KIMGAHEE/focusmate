@@ -359,3 +359,11 @@ html[data-theme="dark"] .plan-date-controls #planPrevDay,
 html[data-theme="dark"] .plan-date-controls #planNextDay {
   color: #f0edff;
 }
+/* 다크모드 주간 달성률 가독성 개선 */
+html[data-theme="dark"] .weekly-number,
+html[data-theme="dark"] .weekly-stats b {
+  color: #f0edff;
+}
+html[data-theme="dark"] .weekly-stats {
+  color: #b9c3e3;
+}
