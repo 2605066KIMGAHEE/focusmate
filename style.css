@@ -138,7 +138,7 @@
 .plan-date-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:9px 0}.plan-date-controls input{max-width:175px;min-width:0;border:1px solid #dfe4f0;border-radius:9px;padding:8px;color:#30416c;background:#fff;font:inherit;font-size:12px}.plan-date-controls button{padding:7px 11px}.task-actions button:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}@media(max-width:620px){.plan-date-controls input{max-width:145px}.plan-date-controls button{padding:8px 10px}}
 
 /* v18: date navigation, postpone picker, equal report actions */
-.plan-date-controls #planPrevDay,.plan-date-controls #planNextDay{width:44px;min-width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:23px;font-weight:900;line-height:1;color:#273657}
+.plan-date-controls #planPrevDay,.plan-date-controls #planNextDay{width:44px;min-width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:23px;font-weight:900;line-height:1;}
 .plan-date-controls #planPrevDay span,.plan-date-controls #planNextDay span{display:block;transform:translateY(-1px)}
 #postponeTargetDate{display:block;width:100%;min-height:46px;box-sizing:border-box;border:1px solid #dfe4f0;border-radius:10px;padding:9px 12px;font:inherit;color:#29365c;background:white;margin:8px 0}
 .monthly-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch}
