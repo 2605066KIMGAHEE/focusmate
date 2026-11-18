@@ -202,6 +202,11 @@ html[data-theme="dark"] .stat-icon.green{background:#22483e;color:#8bdfbe}
 html[data-theme="dark"] .stat-icon.orange{background:#51402a;color:#ffd194}
 html[data-theme="dark"] .stat-icon.blue{background:#273c56;color:#a8caff}
 html[data-theme="dark"] .mobile-menu-backdrop{background:rgba(0,0,0,.7)}
+/* 다크모드 날짜 이동 화살표 색상 수정 */
+html[data-theme="dark"] .plan-date-controls #planPrevDay,
+html[data-theme="dark"] .plan-date-controls #planNextDay {
+  color: #f0edff;
+}
 @media(max-width:620px){html[data-theme="dark"] .sidebar nav,html[data-theme="dark"] .sidebar.menu-open nav{background:#202036}}
 
 /* V21.2 signup usability */
