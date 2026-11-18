@@ -348,3 +348,9 @@ html[data-theme="dark"] .profile #themeToggle:hover{
 .account-remember span{font-size:12px}
 .account-remember[hidden]{display:none!important}
 html[data-theme="dark"] .account-remember{color:#c9c6db}
+
+/* V21.9: improve previous/next date arrow contrast in dark mode */
+html[data-theme="dark"] .plan-date-controls #planPrevDay,
+html[data-theme="dark"] .plan-date-controls #planNextDay {
+  color: #f0edff;
+}
