@@ -20,7 +20,7 @@ function refreshClocks(){document.querySelectorAll("[data-clock]").forEach(x=>x.
 function loadTasks(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]}catch{return []}}
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(tasks))}
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function showToast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2200)}
+function showToast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2500)}
 function stats(){const total=tasks.length,done=tasks.filter(t=>t.done).length,failed=tasks.filter(t=>t.incomplete&&!t.done).length,left=total-done-failed,rate=total?Math.round(done/total*100):0;return{total,done,failed,left,rate}}
 function updateDashboard(){
  const s=stats();
