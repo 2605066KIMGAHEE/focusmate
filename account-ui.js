@@ -5,10 +5,11 @@ function setMobileNickname(name){const el=$('mobileNickname');if(el)el.textConte
 async function updateMobileNickname(){try{const a=await request('profile',{},true);setMobileNickname(a.nickname);}catch{setMobileNickname('내 계정');}}
 $('mobileProfile')?.addEventListener('click',()=>{$('openAccountSettings').click();document.querySelector('.sidebar')?.classList.remove('menu-open');document.body.classList.remove('mobile-drawer-open');$('mobileMenuToggle')?.setAttribute('aria-expanded','false');$('mobileMenuToggle')?.querySelector('span')?.replaceChildren(document.createTextNode('☰'));});
 const REMEMBER_KEY='focusmate_remembered_username';
-const panel=$('accountGate'),form=$('accountForm'),msg=$('accountMessage');let mode='login',checkedUsername='';
+const panel=$('accountGate'),form=$('accountForm'),msg=$('accountMessage');let mode='login',checkedUsername='',checkedSettingsUsername='',originalSettingsUsername='',settingsCheckVersion=0;
+function resetSettingsUsernameCheck(){checkedSettingsUsername='';settingsCheckVersion++;$('settingsUsernameCheckStatus').hidden=true;$('settingsUsernameCheckStatus').textContent='';}
 function message(s){msg.textContent=s||'';}
 function show(m){if(m!=='login' && m!=='settings')$('recoveryIssued').hidden=true;mode=m;checkedUsername='';$('usernameCheckStatus').hidden=true;$('accountForm').hidden=m!=='login';$('signupForm').hidden=m!=='signup';if(m==='signup'){$('signupPassword').value='';$('accountConfirm').value='';}message('');$('accountTitle').textContent=({login:'로그인',signup:'회원가입',recover:'계정 복구',settings:'계정 설정'})[m];
- if(m==='settings'){['settingsCurrentPassword','settingsNewPassword','settingsConfirmPassword'].forEach(id=>{$(id).value='';});} $('closeAccountSettings').hidden=m!=='settings';$('regenerateRecovery').hidden=m!=='settings';$('logoutAccount').hidden=m!=='settings';document.querySelector('.account-links').classList.toggle('settings-links',m==='settings');$('recoveryIssued').hidden=true;
+ if(m==='settings'){resetSettingsUsernameCheck();['settingsCurrentPassword','settingsNewPassword','settingsConfirmPassword'].forEach(id=>{$(id).value='';});} $('closeAccountSettings').hidden=m!=='settings';$('regenerateRecovery').hidden=m!=='settings';$('logoutAccount').hidden=m!=='settings';document.querySelector('.account-links').classList.toggle('settings-links',m==='settings');$('recoveryIssued').hidden=true;
  $('rememberUsernameWrap').hidden=m!=='login';$('accountRecoveryWrap').hidden=m!=='recover';$('accountSettings').hidden=m!=='settings';$('accountActions').hidden=m==='settings';$('accountSubmit').textContent=m==='signup'?'계정 만들기':'로그인';$('accountLoginLink').hidden=m==='login'||m==='settings';$('accountSignupLink').hidden=m==='signup'||m==='settings';$('accountRecoverLink').hidden=m==='recover'||m==='settings';
   document.querySelectorAll('[data-toggle-password]').forEach(btn=>{const el=$(btn.dataset.togglePassword);if(el){el.type='password';btn.setAttribute('aria-label','비밀번호 표시');btn.setAttribute('title','비밀번호 표시');btn.setAttribute('aria-pressed','false');}});
  panel.hidden=false;}
@@ -24,10 +25,38 @@ document.querySelectorAll('[data-toggle-password]').forEach(btn=>btn.addEventLis
 $('accountSignupLink').onclick=()=>show('signup');$('accountLoginLink').onclick=()=>show('login');$('accountRecoverLink').onclick=()=>show('recover');
 $('findUsername').onclick=async()=>{try{const r=await request('recover',{mode:'find',code:$('accountRecovery').value.trim()});message('등록된 아이디: '+r.username);}catch(e){message(e.message);}};
 $('accountRecoveryWrap').addEventListener('submit',async e=>{e.preventDefault();try{const p=$('recoverNewPassword').value;if(p!==$('recoverConfirmPassword').value)throw Error('새 비밀번호가 일치하지 않습니다.');const r=await request('recover',{mode:'reset',code:$('accountRecovery').value.trim(),newPassword:p});reveal(r.recovery);message('비밀번호를 재설정했어요. 새 복구 코드를 보관한 뒤 로그인하세요. 아이디: '+r.username);}catch(e){message(e.message);}});
-$('openAccountSettings').onclick=async()=>{show('settings');try{const a=await request('profile',{},true);$('settingsUsername').value=a.username;$('settingsNickname').value=a.nickname;}catch(e){message(e.message);}};
+$('openAccountSettings').onclick=async()=>{show('settings');originalSettingsUsername='';$('settingsUsername').value='';try{const a=await request('profile',{},true);originalSettingsUsername=a.username.toLowerCase();$('settingsUsername').value=a.username;$('settingsNickname').value=a.nickname;resetSettingsUsernameCheck();}catch(e){message(e.message);}};
 $('closeAccountSettings').onclick=()=>{panel.hidden=true;};
 $('saveNickname').onclick=async()=>{try{await request('nickname',{nickname:$('settingsNickname').value},true);setMobileNickname($('settingsNickname').value.trim());message('닉네임이 변경됐어요.');}catch(e){message(e.message);}};
-$('saveUsername').onclick=async()=>{try{const newName=$('settingsUsername').value.trim().toLowerCase();await request('username',{newUsername:newName,currentPassword:$('settingsCurrentPassword').value},true);if(localStorage.getItem(REMEMBER_KEY))localStorage.setItem(REMEMBER_KEY,newName);$('accountUsername').value=newName;message('아이디가 변경됐어요. 다음 로그인부터 새 아이디를 사용하세요.');}catch(e){message(e.message);}};
+$('settingsUsername').addEventListener('input',resetSettingsUsernameCheck);
+$('checkSettingsUsername').onclick=async()=>{
+ const name=$('settingsUsername').value.trim().toLowerCase(),status=$('settingsUsernameCheckStatus'),button=$('checkSettingsUsername');
+ const version=++settingsCheckVersion;checkedSettingsUsername='';status.hidden=false;status.textContent='확인 중…';button.disabled=true;
+ try{
+  if(!/^[a-z0-9_]{4,24}$/i.test(name))throw Error('아이디는 영문·숫자·4~24자로 입력해 주세요.');
+  if(name===originalSettingsUsername)throw Error('현재 사용 중인 아이디입니다.');
+  const result=await request('check_username',{username:name});
+  if(version!==settingsCheckVersion||$('settingsUsername').value.trim().toLowerCase()!==name)return;
+  if(!result.available)throw Error('이미 사용 중인 아이디입니다.');
+  checkedSettingsUsername=name;status.textContent='사용 가능한 아이디입니다.';
+ }catch(e){if(version===settingsCheckVersion){checkedSettingsUsername='';status.textContent=e.message;}}
+ finally{button.disabled=false;}
+};
+$('saveUsername').onclick=async()=>{
+ const button=$('saveUsername');
+ try{
+  const newName=$('settingsUsername').value.trim().toLowerCase();
+  if(!originalSettingsUsername)throw Error('계정 정보를 불러온 후 다시 시도해 주세요.');
+  if(newName===originalSettingsUsername)throw Error('현재 사용 중인 아이디입니다.');
+  if(checkedSettingsUsername!==newName)throw Error('아이디 중복 확인을 먼저 해 주세요.');
+  button.disabled=true;
+  await request('username',{newUsername:newName,currentPassword:$('settingsCurrentPassword').value},true);
+  originalSettingsUsername=newName;resetSettingsUsernameCheck();
+  if(localStorage.getItem(REMEMBER_KEY))localStorage.setItem(REMEMBER_KEY,newName);
+  $('accountUsername').value=newName;$('settingsCurrentPassword').value='';
+  message('아이디가 변경됐어요. 다음 로그인부터 새 아이디를 사용하세요.');
+ }catch(e){message(e.message);}finally{button.disabled=false;}
+};
 $('savePassword').onclick=async()=>{try{if($('settingsNewPassword').value!==$('settingsConfirmPassword').value)throw Error('새 비밀번호가 일치하지 않습니다.');await request('password',{currentPassword:$('settingsCurrentPassword').value,newPassword:$('settingsNewPassword').value},true);$('settingsCurrentPassword').value='';$('settingsNewPassword').value='';$('settingsConfirmPassword').value='';message('비밀번호가 변경됐어요. 브라우저에 이전 비밀번호가 저장돼 있다면 새 비밀번호로 업데이트하세요.');}catch(e){message(e.message);}};
 $('regenerateRecovery').onclick=async()=>{try{const r=await request('regenerate',{currentPassword:$('settingsCurrentPassword').value},true);reveal(r.recovery);message('새 복구 코드를 보관하세요. 기존 코드는 사용할 수 없습니다.');}catch(e){message(e.message);}};
 $('logoutAccount').onclick=async()=>{try{message('로그아웃 중…');if(DEMO)await window.focusmateDemoLogout();else await window.focusmateLogout();setMobileNickname('내 계정');show('login');}catch(e){message('로그아웃하지 못했어요: '+e.message);}};
