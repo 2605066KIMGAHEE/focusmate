@@ -9,7 +9,22 @@ if(window.focusmateDemoMode){
  if(status)status.textContent='로컬 체험 모드 · 클라우드 동기화 없음';
  return;
 }
-const setStatus=s=>{if(status)status.textContent=s;};
+let statusTimer;
+
+const setStatus = s => {
+  if (!status) return;
+
+  clearTimeout(statusTimer);
+  status.textContent = s;
+  status.classList.remove('show');
+
+  void status.offsetWidth;
+  status.classList.add('show');
+
+  statusTimer = setTimeout(() => {
+    status.classList.remove('show');
+  }, 2500);
+};
 if(!window.supabase?.createClient){setStatus('Supabase를 불러오지 못했습니다.');return;}
 const client=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
 window.focusmateSupabase=client;
