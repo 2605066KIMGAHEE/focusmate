@@ -84,34 +84,44 @@ function openPostpone(id){
  $("postponeTaskName").textContent='「'+t.name+'」';
  $("postponeLoss").textContent=isTracked(t)?readableMinutes(parseMinutes(t)):"시간 측정 없는 일정";
  const minDate=shiftDay(localToday(),1);
- $("postponeTargetDate").min=minDate;$("postponeTargetDate").value=t.date&&t.date>=minDate?shiftDay(t.date,1):minDate;
- $("postponeDate").textContent=`변경 예정 마감일: ${t.date||"오늘"} → ${$("postponeTargetDate").value}`;$("postponeReason").value="";
+ $("postponeStartDate").min=localToday();
+ $("postponeStartDate").value= minDate;
+ $("postponeTargetDate").value=shiftDay(taskEnd(t),1);
+ syncPostponeDates();$("postponeReason").value="";
  $("postponeModal").classList.remove("hidden");$("postponeNo").focus();
 }
 function closePostpone(){pendingPostponeId=null;$("postponeModal").classList.add("hidden")}
 $("postponeNo").addEventListener("click",closePostpone);
-$("postponeTargetDate").addEventListener("change",()=>{const t=tasks.find(x=>String(x.id)===String(pendingPostponeId));if(t)$("postponeDate").textContent=`변경 예정 마감일: ${t.date||"오늘"} → ${$("postponeTargetDate").value||"날짜 선택 필요"}`});
+function syncPostponeDates(){
+ const t=tasks.find(x=>String(x.id)===String(pendingPostponeId));if(!t)return;
+ const start=$("postponeStartDate").value;
+ const minEnd=shiftDay(taskEnd(t),1);
+ $("postponeTargetDate").min=start>minEnd?start:minEnd;
+ if($("postponeTargetDate").value<$("postponeTargetDate").min)$("postponeTargetDate").value=$("postponeTargetDate").min;
+ $("postponeDate").textContent=`변경 예정 기간: ${taskRange(t)} → ${start||"시작일 선택 필요"} ~ ${$("postponeTargetDate").value}`;
+}
+$("postponeStartDate").addEventListener("change",syncPostponeDates);
+$("postponeTargetDate").addEventListener("change",syncPostponeDates);
 $("postponeYes").addEventListener("click",()=>{
  if(pendingPostponeId===null)return;
  const id=pendingPostponeId;
  const t=tasks.find(x=>String(x.id)===String(id));
- if(!t)return;
- const target=$("postponeTargetDate").value;
- if(!/^\d{4}-\d{2}-\d{2}$/.test(target)||target<=localToday()||target<=t.date){showToast("현재 마감일보다 뒤이면서 오늘 이후인 날짜를 선택해 주세요.");return}
+ if(!canActOn(t)){closePostpone();updateDashboard();return;}
+ const start=$("postponeStartDate").value,target=$("postponeTargetDate").value;
+ if(!$("postponeStartDate").checkValidity()||!$("postponeTargetDate").checkValidity()||!start||!target||start<localToday()||target<start||target<=taskEnd(t)){showToast("시작일과 마감일을 올바르게 선택해 주세요. 마감일은 기존보다 늦어야 해요.");return}
  const reason=$("postponeReason").value;
  const oldDate=t.date;const oldStart=taskStart(t);
- const delta=Math.round((localDateFromISO(target)-localDateFromISO(oldDate))/86400000);
  if(active&&String(active.id)===String(t.id))stopActive();
  const previousSeconds=measured(t.id);
  sessions=sessions.filter(x=>String(x.id)!==String(t.id));
  if(active&&String(active.id)===String(t.id))active=null;
  saveTiming();
- t.date=target;t.startDate=oldStart?shiftDay(oldStart,delta):target;
+ t.date=target;t.startDate=start;
  t.postponed=(t.postponed||0)+1;
- addHistory(t,"미루기",reason,{from:oldDate,to:t.date,previousSeconds:Math.floor(previousSeconds)});
+ addHistory(t,"미루기",reason,{from:oldDate,to:t.date,fromStart:oldStart,toStart:start,previousSeconds:Math.floor(previousSeconds)});
  closePostpone();save();updateDashboard();
  if($("calendar").classList.contains("active"))renderCalendar();
- showToast(`${target}로 일정을 미뤘어요.`);
+ showToast(`${start} ~ ${target}로 일정을 미뤘어요.`);
 });
 // 경고 팝업은 바깥 클릭과 Escape로 닫히지 않음. 두 선택 버튼만 허용.
 document.addEventListener("keydown",e=>{if(!$("postponeModal").classList.contains("hidden")){if(e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation()}if(e.key==="Tab"){const first=$("postponeNo"),last=$("postponeYes");if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}}},true);
@@ -121,7 +131,7 @@ function taskHTML(t){
  const timer=allowed&&isTracked(t)?`<button class="task-btn" data-${a&&active.running?"pause":"start"}="${t.id}">${a&&active.running?"Ⅱ 일시정지":a?"▶ 재개":"▶ 시작"}</button>`:"";
  const reason=latestReason(t);
  const note=t.incomplete?`<div class="task-note">${autoFailed?"기한 초과 · 자동 실패":"실패"} · ${escapeHTML(reason||"사유 미입력")}</div>`:"";
- const history=t.history?.length?`<details class="task-history"><summary>변경 기록 ${t.history.length}건</summary>${t.history.map(h=>`<div>${escapeHTML(h.status)} · ${escapeHTML(h.reason||"사유 미입력")}${h.to?` (${escapeHTML(h.from||"")} → ${escapeHTML(h.to)})`:""}</div>`).join("")}</details>`:"";
+ const history=t.history?.length?`<details class="task-history"><summary>변경 기록 ${t.history.length}건</summary>${t.history.map(h=>`<div>${escapeHTML(h.status)} · ${escapeHTML(h.reason||"사유 미입력")}${h.to?` (${escapeHTML(h.fromStart?`${h.fromStart} ~ ${h.from}`:h.from||"")} → ${escapeHTML(h.toStart?`${h.toStart} ~ ${h.to}`:h.to)})`:""}</div>`).join("")}</details>`:"";
  const actions=t.incomplete
   ?`${autoFailed?`<button class="task-btn" data-incomplete="${t.id}">✎ ${reason?"사유 수정":"실패 사유 입력"}</button>`:`<button class="task-btn undo-btn" data-undo="${t.id}">↶ 실패 취소</button>`}`
   :t.done?`<button class="task-btn undo-btn" data-undo="${t.id}" ${isExpired(t)?"disabled title=\"마감일이 지나 완료를 취소할 수 없습니다\"":""}>↶ 완료 취소</button>`
