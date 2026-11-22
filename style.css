@@ -321,6 +321,11 @@ html[data-theme="dark"] .profile #themeToggle:hover{
   html[data-theme="dark"] .sidebar nav .mobile-account-actions #mobileLogout{color:#b2b5d0}
 }
 
+/* 다크모드 모바일 팝업 하단 배경색 수정 */
+html[data-theme="dark"] .modal-panel .form-actions {
+  background: #222437;
+}
+
 /* V21.8: prevent mobile theme label from vertical wrapping; transparent menu trigger */
 @media(max-width:620px){
   .sidebar .mobile-menu-toggle,
