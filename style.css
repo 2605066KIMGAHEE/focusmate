@@ -399,30 +399,30 @@ html[data-theme="dark"] .weekly-stats {
 }
 
 /* 캘린더 다크 모드 */
-html[data-theme="dark"] .cal-day {
-  background: #2b2c40;
-  color: #e7e8f6;
-  border-color: #393b56;
+html[data-theme="dark"] #calendar .cal-day {
+  background: #2b2c40 !important;
+  color: #e7e8f6 !important;
+  border-color: #393b56 !important;
 }
 
-html[data-theme="dark"] .cal-day.selected {
-  background: #403c60;
-  border-color: #8980c9;
+html[data-theme="dark"] #calendar .cal-day.selected {
+  background: #403c60 !important;
+  border-color: #8980c9 !important;
 }
 
-html[data-theme="dark"] .cal-day small {
-  color: #c5b7e8;
+html[data-theme="dark"] #calendar .cal-day small {
+  color: #c5b7e8 !important;
 }
 
-html[data-theme="dark"] .cal-day span {
-  color: #8bc5ad;
+html[data-theme="dark"] #calendar .cal-day span {
+  color: #8bc5ad !important;
 }
 
-html[data-theme="dark"] .cal-summary div {
-  background: #2b2c40;
-  color: #b9c3e3;
+html[data-theme="dark"] #calendarSummary > div {
+  background: #2b2c40 !important;
+  color: #b9c3e3 !important;
 }
 
-html[data-theme="dark"] .cal-summary b {
-  color: #e7e8f6;
+html[data-theme="dark"] #calendarSummary b {
+  color: #e7e8f6 !important;
 }
