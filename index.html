@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FocusMate | 나만의 학습 관리</title>
 <link rel="stylesheet" href="style.css">
+<style>
+#postponeModal .postpone-period{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;text-align:left}
+#postponeModal .postpone-period input{display:block;width:100%;min-width:0;max-width:100%;min-height:46px;box-sizing:border-box;border:1px solid #dfe4f0;border-radius:10px;padding:8px;font:inherit;color:#29365c;background:white;margin:8px 0}
+html[data-theme="dark"] #postponeModal .postpone-task-name{color:#e7e8f6!important}
+html[data-theme="dark"] #postponeModal .postpone-impact{background:#30334c;color:#d5d9ed}
+html[data-theme="dark"] #postponeModal .postpone-impact strong{color:#ffc09e}
+html[data-theme="dark"] #postponeModal .postpone-warning{background:#51402a;color:#ffd194}
+html[data-theme="dark"] #postponeModal .postpone-date,html[data-theme="dark"] #postponeModal .reason-label,html[data-theme="dark"] #postponeDetails{color:#b9c3e3}
+@media(max-width:380px){#postponeModal .postpone-period{grid-template-columns:1fr;gap:0}}
+</style>
 </head>
 <body>
 
@@ -131,11 +141,11 @@
   <div class="modal-panel postpone-dialog" role="alertdialog" aria-modal="true" aria-labelledby="postponeTitle" aria-describedby="postponeDetails">
     <div class="postpone-symbol">!</div><h2 id="postponeTitle">정말로 미루시겠습니까?</h2>
     <p id="postponeTaskName" class="postpone-task-name"></p>
-    <p id="postponeDetails">일정을 미루면 선택한 날짜로 이동하며 현재 타이머는 초기화됩니다.</p>
+    <p id="postponeDetails">일정을 미루면 선택한 기간으로 이동하며 현재 타이머는 초기화됩니다.</p>
     <div class="postpone-impact"><span>예상 일정 지연 부담</span><strong id="postponeLoss">0분</strong></div>
-    <label class="reason-label" for="postponeTargetDate">미룰 날짜 선택 (필수)</label><input type="date" id="postponeTargetDate" required><div class="postpone-date" id="postponeDate"></div><label class="reason-label">미루는 사유 (선택)<textarea id="postponeReason" rows="2" maxlength="300" placeholder="예: 다른 과제가 예상보다 오래 걸렸어요"></textarea></label>
+    <div class="postpone-period"><label class="reason-label">변경할 시작일 (필수)<input type="date" id="postponeStartDate" required></label><label class="reason-label">변경할 마감일 (필수)<input type="date" id="postponeTargetDate" required></label></div><div class="postpone-date" id="postponeDate"></div><label class="reason-label">미루는 사유 (선택)<textarea id="postponeReason" rows="2" maxlength="300" placeholder="예: 다른 과제가 예상보다 오래 걸렸어요"></textarea></label>
     <p class="postpone-warning">⚠ 다른 학습 계획에도 영향을 줄 수 있어요.</p>
-    <div class="postpone-actions"><button type="button" class="secondary" id="postponeNo">아니오, 유지할게요</button><button type="button" class="primary" id="postponeYes">선택한 날짜로 미루기</button></div>
+    <div class="postpone-actions"><button type="button" class="secondary" id="postponeNo">아니오, 유지할게요</button><button type="button" class="primary" id="postponeYes">선택한 기간으로 미루기</button></div>
   </div>
 </div>
 <div id="incompleteModal" class="modal-backdrop hidden" role="presentation"><div class="modal-panel reason-dialog" role="dialog" aria-modal="true" aria-labelledby="incompleteTitle"><h2 id="incompleteTitle">실패 사유 기록</h2><p id="incompleteTaskName"></p><label class="reason-label">실패 사유 (필수)<textarea id="incompleteReason" required rows="3" maxlength="300" placeholder="완료하지 못한 이유를 적어주세요"></textarea></label><p class="privacy-warning" role="note">⚠ 이름, 연락처, 주소, 건강정보 등 개인정보나 민감한 정보는 입력하지 마세요. 향후 AI 분석에 사용될 수 있습니다.</p><div class="form-actions"><button type="button" class="secondary" id="incompleteCancel">취소</button><button type="button" class="primary" id="incompleteSave">실패로 기록</button></div></div></div>
