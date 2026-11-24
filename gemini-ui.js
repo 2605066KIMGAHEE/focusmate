@@ -16,7 +16,20 @@ async function run(type){
   if(!response.ok)throw Error([result.error||'서버 오류',result.detail].filter(Boolean).join(' — '));
   target.textContent=result.status==='pending'?'AI 분석이 진행 중이에요. 잠시 후 다시 확인해 주세요.':result.status==='failed'?'분석에 실패했어요. 버튼을 눌러 다시 시도할 수 있어요.':result.status==='empty'?'해당 기간에 분석할 기록이 없습니다.':result.feedback||'결과가 없습니다.';
   if(result.status==='done'&&type==='monthly'){window.focusmateMonthlyAI=result.feedback;window.focusmateMonthlyAIPeriod=result.period;}
- }catch(e){target.textContent='AI 분석 실패: '+e.message+' (잠시 후 다시 시도해 주세요.)';}
+ }catch(e){
+  const msg=String(e.message||'');
+
+  if(msg.includes('Gemini HTTP 503')){
+    target.textContent='⚠ AI 서버가 일시적으로 혼잡합니다.\n현재 AI 분석 요청이 많아 응답이 지연되고 있어요.\n학습 기록은 그대로 유지되니 잠시 후 다시 시도해 주세요.';
+  }else if(msg.includes('Gemini HTTP 429')){
+    target.textContent='⚠ AI 분석 요청 한도에 도달했습니다.\n다음 날 다시 시도해 주세요.';
+  }else if(msg.includes('Gemini HTTP 404')){
+    target.textContent='⚠ 현재 AI 모델을 사용할 수 없습니다.\n서비스 점검이 필요합니다.';
+  }else{
+    target.textContent='⚠ AI 분석 중 일시적인 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.';
+  }
+  console.error('Gemini 분석 오류:',e);
+}
  finally{busy=false;}
 }
 document.getElementById('aiDailyRefresh').addEventListener('click',()=>run('daily'));
