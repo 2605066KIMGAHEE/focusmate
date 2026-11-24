@@ -12,7 +12,7 @@ function human(sec){const m=Math.floor(sec/60);return m>=60?`${Math.floor(m/60)}
 function measured(id){return sessions.filter(s=>String(s.id)===String(id)).reduce((v,s)=>v+s.seconds,0)+(active&&String(active.id)===String(id)?active.elapsed+(active.running?(Date.now()-active.since)/1000:0):0)}
 function stopActive(){if(!active)return;const seconds=active.elapsed+(active.running?(Date.now()-active.since)/1000:0);if(seconds>0)sessions.push({id:active.id,date:localToday(),seconds});active=null;saveTiming()}
 function startTask(id){const t=tasks.find(x=>String(x.id)===String(id));if(!t||t.done||t.incomplete||!isTracked(t)||!canActOn(t))return;if(active&&String(active.id)!==String(id))stopActive();if(!active)active={id,elapsed:0,running:false};if(active.running)return;active.running=true;active.since=Date.now();saveTiming();renderTasks();updateLinked();showToast("학습 시간 측정을 시작했어요.")}
-function pauseTask(id){if(!active||String(active.id)!==String(id)||!active.running)return;active.elapsed+=(Date.now()-active.since)/1000;active.running=false;saveTiming();renderTasks();updateLinked();showToast("학습 시간을 일시정지했어요.")}
+function pauseTask(id){if(!active||String(active.id)!==String(id)||!active.running)return;const seconds=active.elapsed+(Date.now()-active.since)/1000;if(seconds>0)sessions.push({id:active.id,date:localToday(),seconds});active.elapsed=0;active.running=false;saveTiming();renderTasks();updateLinked();showToast("학습 시간을 일시정지했어요.")}
 function completeTask(id){const t=tasks.find(x=>String(x.id)===String(id));if(!t||!canActOn(t))return;if(active&&String(active.id)===String(id))stopActive();t.done=true;t.incomplete=false;t.failedAt=null;t.failureType=null;save();updateDashboard();showToast("계획을 완료했어요!")}
 function updateLinked(){/* 독립 집중 타이머 화면 제거: 일정별 측정은 유지 */}
 function refreshClocks(){document.querySelectorAll("[data-clock]").forEach(x=>x.textContent=clock(measured(x.dataset.clock)));updateLinked()}
@@ -128,7 +128,7 @@ document.addEventListener("keydown",e=>{if(!$("postponeModal").classList.contain
 function taskHTML(t){
  const allowed=canActOn(t), autoFailed=isAutoFailed(t);
  const a=active&&String(active.id)===String(t.id);
- const timer=allowed&&isTracked(t)?`<button class="task-btn" data-${a&&active.running?"pause":"start"}="${t.id}">${a&&active.running?"Ⅱ 일시정지":a?"▶ 재개":"▶ 시작"}</button>`:"";
+ const timer=allowed&&isTracked(t)?`<button class="task-btn" data-${a&&active.running?"pause":"start"}="${t.id}">${a&&active.running?"Ⅱ 일시정지":(a||measured(t.id)>0)?"▶ 재개":"▶ 시작"}</button>`:"";
  const reason=latestReason(t);
  const note=t.incomplete?`<div class="task-note">${autoFailed?"기한 초과 · 자동 실패":"실패"} · ${escapeHTML(reason||"사유 미입력")}</div>`:"";
  const history=t.history?.length?`<details class="task-history"><summary>변경 기록 ${t.history.length}건</summary>${t.history.map(h=>`<div>${escapeHTML(h.status)} · ${escapeHTML(h.reason||"사유 미입력")}${h.to?` (${escapeHTML(h.fromStart?`${h.fromStart} ~ ${h.from}`:h.from||"")} → ${escapeHTML(h.toStart?`${h.toStart} ~ ${h.to}`:h.to)})`:""}</div>`).join("")}</details>`:"";
